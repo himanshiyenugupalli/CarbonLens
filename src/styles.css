@@ -1,0 +1,201 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-moss: var(--moss);
+  --color-leaf: var(--leaf);
+  --color-leaf-foreground: var(--leaf-foreground);
+  --color-lens: var(--lens);
+  --color-mint: var(--mint);
+  --color-forest: var(--forest);
+  --color-coal: var(--coal);
+  --color-ash: var(--ash);
+  --color-alert: var(--alert);
+
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-drift: drift 14s ease-in-out infinite;
+  --animate-pulse-soft: pulse-soft 3s ease-in-out infinite;
+  --animate-spin-slow: spin 22s linear infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes drift {
+  0%, 100% { transform: translateX(-8px); }
+  50% { transform: translateX(8px); }
+}
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+:root {
+  --radius: 1.25rem;
+
+  /* brand */
+  --moss: oklch(0.38 0.09 160);        /* #0F4C3A approx */
+  --leaf: oklch(0.74 0.18 150);        /* #2ECC71 */
+  --leaf-foreground: oklch(0.18 0.04 160);
+  --lens: oklch(0.71 0.12 185);        /* #14B8A6 */
+  --mint: oklch(0.97 0.03 160);        /* #E8F8F0 */
+  --forest: oklch(0.20 0.03 165);      /* #0B1F1A */
+  --coal: oklch(0.18 0.005 0);
+  --ash: oklch(0.55 0.005 0);
+  --alert: oklch(0.62 0.22 28);
+
+  /* light theme */
+  --background: var(--mint);
+  --foreground: oklch(0.25 0.05 160);
+
+  --card: oklch(1 0 0 / 0.6);
+  --card-foreground: oklch(0.25 0.05 160);
+  --popover: oklch(1 0 0 / 0.9);
+  --popover-foreground: oklch(0.25 0.05 160);
+
+  --primary: var(--leaf);
+  --primary-foreground: oklch(0.18 0.04 160);
+  --secondary: oklch(0.95 0.03 170);
+  --secondary-foreground: oklch(0.25 0.05 160);
+  --muted: oklch(0.95 0.02 170);
+  --muted-foreground: oklch(0.45 0.04 160);
+  --accent: var(--lens);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.62 0.18 30);
+  --destructive-foreground: oklch(1 0 0);
+
+  --border: oklch(0.38 0.09 160 / 0.12);
+  --input: oklch(0.38 0.09 160 / 0.15);
+  --ring: var(--leaf);
+
+  --glass-bg: rgba(255, 255, 255, 0.35);
+  --glass-border: rgba(255, 255, 255, 0.45);
+  --glass-shadow: 0 10px 40px -12px rgba(15, 76, 58, 0.15);
+
+  --gradient-hero: radial-gradient(at 20% 10%, oklch(0.74 0.18 150 / 0.25), transparent 50%),
+                   radial-gradient(at 90% 20%, oklch(0.71 0.12 185 / 0.22), transparent 55%),
+                   radial-gradient(at 50% 100%, oklch(0.97 0.03 160), transparent 60%);
+  --gradient-progress: linear-gradient(90deg, var(--leaf), var(--lens));
+}
+
+.dark {
+  --background: var(--forest);
+  --foreground: oklch(0.96 0.02 160);
+
+  --card: rgba(20, 30, 28, 0.55);
+  --card-foreground: oklch(0.96 0.02 160);
+  --popover: oklch(0.22 0.03 165);
+  --popover-foreground: oklch(0.96 0.02 160);
+
+  --primary: var(--leaf);
+  --primary-foreground: oklch(0.15 0.03 160);
+  --secondary: oklch(0.28 0.03 165);
+  --secondary-foreground: oklch(0.96 0.02 160);
+  --muted: oklch(0.26 0.03 165);
+  --muted-foreground: oklch(0.72 0.03 160);
+  --accent: var(--lens);
+  --accent-foreground: oklch(0.12 0.03 165);
+  --destructive: oklch(0.62 0.18 30);
+  --destructive-foreground: oklch(1 0 0);
+
+  --border: oklch(1 0 0 / 0.10);
+  --input: oklch(1 0 0 / 0.15);
+  --ring: var(--leaf);
+
+  --glass-bg: rgba(20, 30, 28, 0.32);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 10px 40px -12px rgba(0, 0, 0, 0.55);
+
+  --gradient-hero: radial-gradient(at 20% 10%, oklch(0.74 0.18 150 / 0.18), transparent 50%),
+                   radial-gradient(at 90% 20%, oklch(0.71 0.12 185 / 0.18), transparent 55%),
+                   radial-gradient(at 50% 100%, oklch(0.20 0.03 165), transparent 60%);
+}
+
+@layer base {
+  * { border-color: var(--color-border); }
+  html, body { font-family: var(--font-sans); }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    background-image: var(--gradient-hero);
+    background-attachment: fixed;
+    min-height: 100vh;
+    transition: background-color 400ms ease, color 400ms ease;
+  }
+  :focus-visible {
+    outline: 2px solid var(--leaf);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+}
+
+@utility glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(22px) saturate(160%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  border-radius: 1.25rem;
+}
+
+@utility glass-strong {
+  background: var(--glass-bg);
+  backdrop-filter: blur(36px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  border-radius: 1.5rem;
+}
+
+@utility pill {
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px) saturate(140%);
+  transition: all 200ms ease;
+}
+
+@utility pill-active {
+  background: linear-gradient(135deg, var(--leaf), var(--lens));
+  color: oklch(0.15 0.03 160);
+  border-color: transparent;
+  box-shadow: 0 6px 20px -8px var(--leaf);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
