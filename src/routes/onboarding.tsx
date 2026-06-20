@@ -1,7 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { LeafSprig, LensRing, SunRays, CloudSquiggle } from "@/components/Doodles";
+import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -36,9 +38,22 @@ function Onboarding() {
     energy: "Grid",
   });
 
-  const finish = () => {
+  const finish = async () => {
     try {
-      localStorage.setItem("cl_profile", JSON.stringify(data));
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData.session) {
+        await supabase.from("profiles").update({
+          location: data.location,
+          household_size: parseInt(data.household, 10) || 1,
+          commute_mode: data.commute,
+          diet_type: data.diet,
+          energy_source: data.energy
+        }).eq("id", sessionData.session.user.id);
+        navigate({ to: "/dashboard" });
+        return;
+      } else {
+        localStorage.setItem("cl_profile", JSON.stringify(data));
+      }
     } catch {}
     navigate({ to: "/auth" });
   };
@@ -53,15 +68,7 @@ function Onboarding() {
       <LensRing className="pointer-events-none absolute -bottom-10 left-10 h-48 w-48 text-[var(--lens)] opacity-15" />
 
       <header className="mx-auto flex max-w-2xl items-center justify-between">
-        <span className="flex items-center gap-2 font-semibold">
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-[var(--leaf)] to-[var(--lens)] text-[oklch(0.15_0.03_160)]">
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <circle cx="12" cy="12" r="7" />
-              <path d="M12 5 Q 16 9 12 19" />
-            </svg>
-          </span>
-          CarbonLens
-        </span>
+        <Logo />
         <ThemeToggle />
       </header>
 

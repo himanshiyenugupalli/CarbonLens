@@ -43,7 +43,7 @@ function Landing() {
 
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen overflow-clip">
       {/* Floating doodle field */}
       <SunRays className="pointer-events-none absolute left-6 top-24 h-20 w-20 text-[var(--leaf)] opacity-25 [animation:var(--animate-spin-slow)]" />
       <CloudSquiggle className="pointer-events-none absolute right-10 top-32 h-8 w-40 text-[var(--lens)] opacity-30 [animation:var(--animate-drift)]" />
@@ -57,7 +57,7 @@ function Landing() {
 
       <div className="px-4 py-6 sm:px-8">
         {/* Header */}
-        <header className="mx-auto flex max-w-6xl items-center justify-between">
+        <header className="sticky top-4 z-50 mx-auto flex max-w-6xl items-center justify-between glass px-6 py-3">
           <Link to="/" className="flex items-center">
             <Logo />
           </Link>
@@ -133,7 +133,7 @@ function Landing() {
           </section>
 
           {/* Features */}
-          <section id="features" className="mt-24">
+          <section id="features" className="mt-24 scroll-mt-28">
             <div className="mb-10 text-center">
               <p className="text-sm uppercase tracking-widest text-[var(--lens)]">What it does</p>
               <h2 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -161,7 +161,7 @@ function Landing() {
           </section>
 
           {/* How it works */}
-          <section id="how" className="mt-24">
+          <section id="how" className="mt-24 scroll-mt-28">
             <div className="mb-10 text-center">
               <p className="text-sm uppercase tracking-widest text-[var(--lens)]">How it works</p>
               <h2 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -185,7 +185,7 @@ function Landing() {
           </section>
 
           {/* FAQ */}
-          <section id="faq" className="mt-24">
+          <section id="faq" className="mt-24 scroll-mt-28">
             <div className="mb-10 text-center">
               <p className="text-sm uppercase tracking-widest text-[var(--lens)]">FAQ</p>
               <h2 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">

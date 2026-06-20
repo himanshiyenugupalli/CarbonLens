@@ -1,5 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getAIPersonalizedTip } from "@/lib/ai";
+import { supabase } from "@/lib/supabase";
 import {
   ResponsiveContainer,
   LineChart,
@@ -41,9 +44,78 @@ const categories = [
 const HIGH_THRESHOLD_KG = 1500;
 
 function Dashboard() {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const totalKg = 1240;
-  const isHigh = totalKg > HIGH_THRESHOLD_KG;
+  const [editLog, setEditLog] = useState<any>(null);
+
+  const { data: session, isLoading: sessionLoading } = useQuery({
+    queryKey: ["session"],
+    queryFn: async () => {
+      const { data } = await supabase.auth.getSession();
+      return data.session;
+    },
+  });
+
+  useEffect(() => {
+    if (!sessionLoading && !session) {
+      navigate({ to: "/auth" });
+    }
+  }, [session, sessionLoading, navigate]);
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile", session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+      const { data } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
+      return data;
+    },
+    enabled: !!session?.user?.id,
+  });
+
+  const { data: logs } = useQuery({
+    queryKey: ["logs", session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return [];
+      const { data } = await supabase.from("activity_logs").select("*").eq("user_id", session.user.id).order("created_at", { ascending: false });
+      return data || [];
+    },
+    enabled: !!session?.user?.id,
+  });
+
+  // Calculate stats from logs
+  const stats = useMemo(() => {
+    if (!logs) return { totalKg: 0, travelKg: 0, energyKg: 0, foodKg: 0, shoppingKg: 0, travelPct: 0, energyPct: 0, foodPct: 0, shoppingPct: 0 };
+    let travel = 0, energy = 0, food = 0, shopping = 0;
+    logs.forEach(log => {
+      const co2 = Number(log.co2_kg) || 0;
+      if (log.category === "Travel") travel += co2;
+      else if (log.category === "Energy") energy += co2;
+      else if (log.category === "Food") food += co2;
+      else if (log.category === "Shopping") shopping += co2;
+    });
+    const total = travel + energy + food + shopping;
+    return {
+      totalKg: Math.round(total),
+      travelKg: Math.round(travel),
+      energyKg: Math.round(energy),
+      foodKg: Math.round(food),
+      shoppingKg: Math.round(shopping),
+      travelPct: total > 0 ? Math.round((travel / total) * 100) : 0,
+      energyPct: total > 0 ? Math.round((energy / total) * 100) : 0,
+      foodPct: total > 0 ? Math.round((food / total) * 100) : 0,
+      shoppingPct: total > 0 ? Math.round((shopping / total) * 100) : 0,
+    };
+  }, [logs]);
+
+  const { data: aiTip, isLoading: isTipLoading } = useQuery({
+    queryKey: ["ai-tip", stats],
+    queryFn: () => getAIPersonalizedTip({ data: { profile: profile || {}, stats } }),
+    enabled: !!profile && stats.totalKg > 0,
+  });
+
+  const isHigh = stats.totalKg > HIGH_THRESHOLD_KG;
+  
+  if (sessionLoading) return null;
 
   return (
     <AppShell>
@@ -53,7 +125,9 @@ function Dashboard() {
         <div className={`glass-strong relative overflow-hidden p-6 sm:p-10 ${isHigh ? "ring-2 ring-[var(--alert)]/40" : ""}`}>
           <LensRing className="pointer-events-none absolute -bottom-10 -right-10 h-56 w-56 text-[var(--leaf)] opacity-15 [animation:var(--animate-spin-slow)]" />
           <GlobeDoodle className="pointer-events-none absolute -bottom-8 left-6 hidden h-24 w-24 text-[var(--ash)] opacity-20 sm:block" />
-          <p className="text-sm text-muted-foreground">Good afternoon, Alex 👋</p>
+          <p className="text-sm text-muted-foreground">
+            Good afternoon, {profile?.full_name ? profile.full_name.split(' ')[0] : 'there'} 👋
+          </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
             Your footprint this month
           </h1>
@@ -65,7 +139,7 @@ function Dashboard() {
                   : "bg-gradient-to-r from-[var(--leaf)] to-[var(--lens)]"
               }`}
             >
-              {totalKg.toLocaleString()}
+              {stats.totalKg.toLocaleString()}
             </span>
             <span className="pb-2 text-lg font-medium text-muted-foreground">kg CO₂</span>
           </div>
@@ -96,7 +170,12 @@ function Dashboard() {
 
 
       <section className="mt-6 grid animate-fade-in gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {categories.map(({ name, icon: Icon, kg, pct }) => {
+        {[
+          { name: "Travel", icon: Car, kg: stats.travelKg, pct: stats.travelPct },
+          { name: "Home Energy", icon: Home, kg: stats.energyKg, pct: stats.energyPct },
+          { name: "Food", icon: Apple, kg: stats.foodKg, pct: stats.foodPct },
+          { name: "Shopping", icon: ShoppingBag, kg: stats.shoppingKg, pct: stats.shoppingPct },
+        ].map(({ name, icon: Icon, kg, pct }) => {
           const catHigh = kg > 450;
           return (
             <div key={name} className="glass p-5 transition hover:-translate-y-1 hover:shadow-lg">
@@ -172,12 +251,20 @@ function Dashboard() {
               <Lightbulb className="h-4 w-4" />
             </span>
             <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              This week's suggestion
+              Personal AI Tip
             </h3>
           </div>
-          <p className="mt-4 text-lg font-medium leading-snug">
-            Try swapping two short car trips for a walk or bike ride, you could save around <span className="text-[var(--leaf)]">8 kg CO₂</span> this week.
-          </p>
+          {isTipLoading ? (
+            <div className="mt-4 animate-pulse space-y-2">
+              <div className="h-4 w-3/4 rounded bg-[var(--glass-border)]"></div>
+              <div className="h-4 w-5/6 rounded bg-[var(--glass-border)]"></div>
+              <div className="h-4 w-2/3 rounded bg-[var(--glass-border)]"></div>
+            </div>
+          ) : (
+            <p className="mt-4 text-lg font-medium leading-snug">
+              {aiTip || "Try swapping two short car trips for a walk or bike ride, you could save around 8 kg CO₂ this week."}
+            </p>
+          )}
           <Link
             to="/onboarding"
             className="mt-5 inline-flex text-sm font-medium text-[var(--lens)] hover:underline"
@@ -188,7 +275,42 @@ function Dashboard() {
         </div>
       </section>
 
-      <LogEntryModal open={open} onOpenChange={setOpen} />
+      <section className="mt-8 animate-fade-in">
+        <h2 className="text-xl font-semibold tracking-tight">Recent Activities</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {logs?.map((log) => (
+            <div 
+              key={log.id} 
+              onClick={() => setEditLog(log)} 
+              className="glass hover-scale flex cursor-pointer items-center justify-between p-4 transition"
+              title="Click to edit"
+            >
+              <div>
+                <p className="font-medium text-foreground capitalize">{log.category} - {log.subtype}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {log.amount} {log.unit} • {log.log_date}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="font-semibold text-[var(--alert)]">{log.co2_kg} <span className="text-xs font-normal">kg CO₂</span></p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground opacity-70">Edit</p>
+              </div>
+            </div>
+          ))}
+          {(!logs || logs.length === 0) && (
+            <p className="text-sm text-muted-foreground col-span-full">No activities logged yet.</p>
+          )}
+        </div>
+      </section>
+
+      <LogEntryModal 
+        open={open || !!editLog} 
+        onOpenChange={(o) => {
+          setOpen(o);
+          if (!o) setEditLog(null);
+        }} 
+        editLog={editLog} 
+      />
     </AppShell>
   );
 }
