@@ -11,7 +11,19 @@ const CATS: { key: Category; icon: typeof Plane }[] = [
   { key: "Shopping", icon: ShoppingBag },
 ];
 
-export function LogEntryModal({ open, onOpenChange, editLog }: { open: boolean; onOpenChange: (o: boolean) => void; editLog?: any }) {
+export interface ActivityLog {
+  id: string;
+  user_id?: string;
+  category: string;
+  subtype: string;
+  amount: number;
+  unit: string;
+  co2_kg: number;
+  log_date: string;
+  created_at?: string;
+}
+
+export function LogEntryModal({ open, onOpenChange, editLog }: { open: boolean; onOpenChange: (o: boolean) => void; editLog?: ActivityLog | null }) {
   const [cat, setCat] = useState<Category>("Travel");
   const today = new Date().toISOString().slice(0, 10);
 

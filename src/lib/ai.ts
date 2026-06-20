@@ -1,8 +1,15 @@
 import { createServerFn } from '@tanstack/react-start';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+/**
+ * Server function to generate a personalized AI tip based on the user's footprint data.
+ * It uses the Google Gemini API to analyze the highest emission category and suggest an actionable tip.
+ *
+ * @param data - Object containing user profile context, aggregated stats, and previous suggestions.
+ * @returns A personalized sustainability suggestion string.
+ */
 export const getAIPersonalizedTip = createServerFn({ method: 'POST' })
-  .validator((data: { profile: any; logs: any[] }) => data)
+  .validator((data: { profile: any; stats: any; previous_suggestions?: string }) => data)
   .handler(async ({ data }) => {
     const apiKey = process.env.GEMINI_API_KEY;
     

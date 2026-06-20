@@ -40,13 +40,24 @@ const categories = [
   { name: "Shopping", icon: ShoppingBag, kg: 162, pct: 13 },
 ];
 
-// Threshold above which we treat the monthly footprint as concerning
+export interface ActivityLog {
+  id: string;
+  user_id?: string;
+  category: string;
+  subtype: string;
+  amount: number;
+  unit: string;
+  co2_kg: number;
+  log_date: string;
+  created_at?: string;
+}
+
 const HIGH_THRESHOLD_KG = 1500;
 
 function Dashboard() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [editLog, setEditLog] = useState<any>(null);
+  const [editLog, setEditLog] = useState<ActivityLog | null>(null);
 
   const { data: session, isLoading: sessionLoading } = useQuery({
     queryKey: ["session"],
@@ -300,6 +311,41 @@ function Dashboard() {
           {(!logs || logs.length === 0) && (
             <p className="text-sm text-muted-foreground col-span-full">No activities logged yet.</p>
           )}
+        </div>
+      </section>
+
+      <section className="mt-8 grid gap-6 lg:grid-cols-2 animate-fade-in mb-8">
+        <div className="glass p-6">
+          <h2 className="text-xl font-semibold tracking-tight mb-4 flex items-center gap-2">
+            <Leaf className="h-5 w-5 text-[var(--leaf)]"/> Weekly Action Pledges
+          </h2>
+          <p className="text-sm text-muted-foreground mb-4">Check off these simple actions to lower your footprint.</p>
+          <div className="space-y-3">
+            {['Meatless Monday', 'Bike or walk to work twice', 'Unplug idle electronics', 'Use reusable shopping bags'].map(pledge => (
+              <label key={pledge} className="flex items-center gap-3 cursor-pointer group p-2 hover:bg-[var(--glass-border)] rounded-xl transition">
+                <input type="checkbox" className="w-5 h-5 accent-[var(--leaf)] rounded border-gray-300" />
+                <span className="text-sm font-medium group-hover:text-[var(--leaf)] transition">{pledge}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="glass p-6">
+          <h2 className="text-xl font-semibold tracking-tight mb-4 flex items-center gap-2">
+            <GlobeDoodle className="h-5 w-5 text-[var(--lens)]"/> Environmental News
+          </h2>
+          <div className="space-y-4 mt-2">
+            <div className="border-l-2 border-[var(--lens)] pl-4 py-1">
+              <p className="text-xs text-[var(--lens)] font-medium mb-1 tracking-wider uppercase">Global Trends</p>
+              <h3 className="text-sm font-semibold">Renewable energy passes 30% of global electricity</h3>
+              <p className="text-xs text-muted-foreground mt-1">Solar and wind power have reached a new milestone in global energy production, significantly lowering global carbon intensity...</p>
+            </div>
+            <div className="border-l-2 border-[var(--leaf)] pl-4 py-1 mt-4">
+              <p className="text-xs text-[var(--leaf)] font-medium mb-1 tracking-wider uppercase">Awareness Campaign</p>
+              <h3 className="text-sm font-semibold">The "Reduce, Reuse, Refill" Initiative</h3>
+              <p className="text-xs text-muted-foreground mt-1">Join millions this month in avoiding single-use plastics. Simple actions like bringing your own mug can save 10kg of CO₂ yearly...</p>
+            </div>
+          </div>
         </div>
       </section>
 
