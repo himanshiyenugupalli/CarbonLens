@@ -12,7 +12,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import { Car, Home, Apple, ShoppingBag, Lightbulb, Plus, TrendingDown, AlertTriangle } from "lucide-react";
+import { Car, Home, Apple, ShoppingBag, Lightbulb, Plus, TrendingDown, AlertTriangle, Leaf } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { LeafSprig, LensRing, Wave, Sprout, GlobeDoodle } from "@/components/Doodles";
 import { LogEntryModal } from "@/components/LogEntryModal";
