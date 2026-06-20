@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 import { ThemeToggle } from "./ThemeToggle";
 import { Logo } from "./Logo";
-import { User } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,11 +15,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    queryClient.clear();
+    navigate({ to: "/" });
+  };
+
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 px-4 pt-4 sm:px-8">
         <nav className="glass mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <Link to="/" className="flex items-center">
+          <Link to="/dashboard" className="flex items-center">
             <Logo />
           </Link>
           <div className="flex items-center gap-3">
@@ -38,6 +49,14 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/help" className="w-full cursor-pointer">Help</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-[var(--glass-border)]" />
+                <DropdownMenuItem 
+                  className="w-full cursor-pointer text-[var(--alert)] focus:bg-[var(--alert)]/10 focus:text-[var(--alert)]"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

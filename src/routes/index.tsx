@@ -1,4 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { useEffect } from "react";
 
 import {
   ArrowRight,
@@ -40,7 +43,20 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  const navigate = useNavigate();
+  const { data: session, isLoading: sessionLoading } = useQuery({
+    queryKey: ["session"],
+    queryFn: async () => {
+      const { data } = await supabase.auth.getSession();
+      return data.session;
+    },
+  });
 
+  useEffect(() => {
+    if (!sessionLoading && session) {
+      navigate({ to: "/dashboard", replace: true });
+    }
+  }, [session, sessionLoading, navigate]);
 
   return (
     <div className="relative min-h-screen overflow-clip">
