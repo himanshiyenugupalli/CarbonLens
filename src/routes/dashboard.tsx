@@ -12,9 +12,8 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import { Car, Home, Apple, ShoppingBag, Lightbulb, Plus, TrendingDown, AlertTriangle, Leaf } from "lucide-react";
+import { Car, Home, Apple, ShoppingBag, Lightbulb, Plus, TrendingDown, AlertTriangle, Leaf, Globe } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { LeafSprig, LensRing, Wave, Sprout, GlobeDoodle } from "@/components/Doodles";
 import { LogEntryModal } from "@/components/LogEntryModal";
 
 export const Route = createFileRoute("/dashboard")({
@@ -137,241 +136,224 @@ function Dashboard() {
 
   return (
     <AppShell>
-      <section className="relative animate-fade-in">
-        <LeafSprig className="pointer-events-none absolute -top-4 right-2 h-20 w-20 text-[var(--lens)] opacity-30 [animation:var(--animate-float)]" />
-        <Sprout className="pointer-events-none absolute -top-2 left-4 hidden h-16 w-16 text-[var(--leaf)] opacity-25 sm:block [animation:var(--animate-float)]" />
-        <div className={`glass-strong relative overflow-hidden p-6 sm:p-10 ${isHigh ? "ring-2 ring-[var(--alert)]/40" : ""}`}>
-          <LensRing className="pointer-events-none absolute -bottom-10 -right-10 h-56 w-56 text-[var(--leaf)] opacity-15 [animation:var(--animate-spin-slow)]" />
-          <GlobeDoodle className="pointer-events-none absolute -bottom-8 left-6 hidden h-24 w-24 text-[var(--ash)] opacity-20 sm:block" />
-          <p className="text-sm text-muted-foreground">
-            Good afternoon, {profile?.full_name ? profile.full_name.split(' ')[0] : 'there'} 👋
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Your footprint this month
-          </h1>
-          <div className="mt-4 flex flex-wrap items-end gap-3">
-            <span
-              className={`bg-clip-text text-5xl font-bold text-transparent sm:text-6xl ${
-                isHigh
-                  ? "bg-gradient-to-r from-[var(--alert)] to-[oklch(0.55_0.22_20)]"
-                  : "bg-gradient-to-r from-[var(--leaf)] to-[var(--lens)]"
-              }`}
-            >
-              {stats.totalKg.toLocaleString()}
-            </span>
-            <span className="pb-2 text-lg font-medium text-muted-foreground">kg CO₂</span>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in pb-8">
+        
+        {/* HERO / TOTAL - 2 columns */}
+        <section className={`glass-strong col-span-1 md:col-span-2 relative p-8 sm:p-10 flex flex-col justify-between ${isHigh ? "ring-2 ring-[var(--alert)]/40" : ""}`}>
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+              Overview
+            </p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+              Hello, {profile?.full_name ? profile.full_name.split(' ')[0] : 'there'}
+            </h1>
+          </div>
+          
+          <div className="mt-10 mb-6 flex flex-col gap-1">
+            <span className="text-sm font-medium text-muted-foreground">This month's footprint</span>
+            <div className="flex items-baseline gap-2">
+              <span className={`text-6xl sm:text-7xl font-bold tracking-tighter ${isHigh ? "text-[var(--alert)]" : "text-foreground"}`}>
+                {stats.totalKg.toLocaleString()}
+              </span>
+              <span className="text-xl font-medium text-muted-foreground">kg CO₂</span>
+            </div>
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center gap-3">
+          <div className="mt-auto pt-6 border-t border-[var(--border)] flex flex-wrap items-center justify-between gap-4">
             {isHigh ? (
-              <div className="pill inline-flex items-center gap-2 border-[var(--alert)]/40 bg-[var(--alert)]/10 px-4 py-2 text-sm text-[var(--alert)]">
-                <AlertTriangle className="h-4 w-4 [animation:var(--animate-pulse-soft)]" />
-                <span className="font-medium">Above safe level</span>
-                <span className="text-[var(--ash)]">let's bring it down together</span>
+              <div className="inline-flex items-center gap-2 text-sm text-[var(--alert)]">
+                <AlertTriangle className="h-5 w-5" />
+                <span className="font-semibold">Above safe level. Let's bring it down.</span>
               </div>
             ) : (
-              <div className="pill inline-flex items-center gap-2 px-4 py-2 text-sm">
-                <TrendingDown className="h-4 w-4 text-[var(--leaf)]" />
-                <span className="font-medium">12% below</span>
-                <span className="text-muted-foreground">national average</span>
+              <div className="inline-flex items-center gap-2 text-sm">
+                <TrendingDown className="h-5 w-5 text-[var(--leaf)]" />
+                <span className="font-semibold text-foreground">12% below national average</span>
               </div>
             )}
             <button
               onClick={() => setOpen(true)}
-              className="hover-scale inline-flex items-center gap-2 rounded-2xl bg-[var(--leaf)] px-5 py-2.5 text-sm font-semibold text-[oklch(0.15_0.03_160)] shadow-[0_10px_30px_-12px_var(--leaf)] transition hover:brightness-105"
+              className="inline-flex items-center gap-2 rounded-xl bg-[var(--leaf)] px-6 py-3 text-sm font-semibold text-[oklch(0.96_0.02_130)] shadow-sm transition hover:opacity-90"
             >
-              <Plus className="h-4 w-4" /> Log New Activity
+              <Plus className="h-4 w-4" /> Log Activity
             </button>
           </div>
-        </div>
-      </section>
+        </section>
 
-
-      <section className="mt-6 grid animate-fade-in gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          { name: "Travel", icon: Car, kg: stats.travelKg, pct: stats.travelPct },
-          { name: "Home Energy", icon: Home, kg: stats.energyKg, pct: stats.energyPct },
-          { name: "Food", icon: Apple, kg: stats.foodKg, pct: stats.foodPct },
-          { name: "Shopping", icon: ShoppingBag, kg: stats.shoppingKg, pct: stats.shoppingPct },
-        ].map(({ name, icon: Icon, kg, pct }) => {
-          const catHigh = kg > 450;
-          return (
-            <div key={name} className="glass p-5 transition hover:-translate-y-1 hover:shadow-lg">
-              <div className="flex items-center justify-between">
-                <span className={`grid h-10 w-10 place-items-center rounded-xl ${catHigh ? "bg-[var(--alert)]/15 text-[var(--alert)]" : "bg-gradient-to-br from-[var(--leaf)]/20 to-[var(--lens)]/20 text-[var(--moss)] dark:text-[var(--mint)]"}`}>
-                  <Icon className="h-5 w-5" />
-                </span>
-                <span className={`text-xs font-medium ${catHigh ? "text-[var(--alert)]" : "text-muted-foreground"}`}>{pct}%</span>
-              </div>
-              <p className="mt-4 text-sm text-muted-foreground">{name}</p>
-              <p className="mt-1 text-2xl font-semibold">
-                {kg} <span className="text-sm font-normal text-muted-foreground">kg</span>
-              </p>
-              <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-[var(--muted)]">
-                <div
-                  className="h-full rounded-full transition-all duration-700"
-                  style={{
-                    width: `${pct}%`,
-                    background: catHigh
-                      ? "linear-gradient(90deg, var(--alert), oklch(0.55 0.22 20))"
-                      : "var(--gradient-progress)",
-                  }}
-                />
-              </div>
-            </div>
-          );
-        })}
-      </section>
-
-      <section className="mt-6 grid gap-4 lg:grid-cols-3">
-        <div className="glass relative overflow-hidden p-6 lg:col-span-2">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">8-week trend</h2>
-            <span className="text-xs text-muted-foreground">kg CO₂ / week</span>
+        {/* AI TIP - 1 column */}
+        <section className="glass col-span-1 p-8 flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-4">
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-[var(--background)] text-[var(--foreground)] shadow-sm border border-[var(--border)]">
+              <Lightbulb className="h-5 w-5" />
+            </span>
+            <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">AI Insight</span>
           </div>
-          <div className="mt-4 h-64 w-full">
+          
+          <div className="flex-grow flex flex-col justify-center py-4">
+            {isTipLoading ? (
+              <div className="animate-pulse space-y-3">
+                <div className="h-4 w-full rounded bg-[var(--muted)]"></div>
+                <div className="h-4 w-5/6 rounded bg-[var(--muted)]"></div>
+                <div className="h-4 w-4/6 rounded bg-[var(--muted)]"></div>
+              </div>
+            ) : (
+              <p className="text-xl font-medium leading-relaxed tracking-tight text-foreground">
+                {aiTip || "Try swapping two short car trips for a walk or bike ride, you could save around 8 kg CO₂ this week."}
+              </p>
+            )}
+          </div>
+
+          <Link
+            to="/onboarding"
+            className="mt-4 text-sm font-semibold text-[var(--lens)] hover:text-foreground transition flex items-center gap-1"
+          >
+            Tuning with your info... &rarr;
+          </Link>
+        </section>
+
+        {/* CATEGORIES - 3 columns */}
+        <section className="col-span-1 md:col-span-3 grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            { name: "Travel", icon: Car, kg: stats.travelKg, pct: stats.travelPct },
+            { name: "Home Energy", icon: Home, kg: stats.energyKg, pct: stats.energyPct },
+            { name: "Food", icon: Apple, kg: stats.foodKg, pct: stats.foodPct },
+            { name: "Shopping", icon: ShoppingBag, kg: stats.shoppingKg, pct: stats.shoppingPct },
+          ].map(({ name, icon: Icon, kg, pct }) => {
+            const catHigh = kg > 450;
+            return (
+              <div key={name} className="glass p-6 transition hover:border-[var(--leaf)]">
+                <div className="flex items-center justify-between">
+                  <Icon className={`h-6 w-6 ${catHigh ? "text-[var(--alert)]" : "text-muted-foreground"}`} />
+                  <span className={`text-xs font-bold tracking-wider ${catHigh ? "text-[var(--alert)]" : "text-muted-foreground"}`}>{pct}%</span>
+                </div>
+                <p className="mt-6 text-sm font-semibold text-muted-foreground uppercase tracking-wider">{name}</p>
+                <p className="mt-1 text-3xl font-bold tracking-tight text-foreground">
+                  {kg} <span className="text-sm font-medium text-muted-foreground">kg</span>
+                </p>
+                <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--muted)]">
+                  <div
+                    className={`h-full rounded-full transition-all duration-700 ${catHigh ? "bg-[var(--alert)]" : "bg-[var(--leaf)]"}`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </section>
+
+        {/* TREND CHART - 2 columns */}
+        <section className="glass col-span-1 md:col-span-2 p-8 min-h-[320px] flex flex-col">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-lg font-semibold tracking-tight">8-Week Trend</h2>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">kg CO₂ / week</span>
+          </div>
+          <div className="flex-grow w-full h-48">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trend} margin={{ top: 10, right: 12, left: -10, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="lineGrad" x1="0" x2="1" y1="0" y2="0">
-                    <stop offset="0%" stopColor="#2ECC71" />
-                    <stop offset="100%" stopColor="#14B8A6" />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="currentColor" strokeOpacity={0.08} vertical={false} />
-                <XAxis dataKey="w" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "currentColor", opacity: 0.6 }} />
-                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "currentColor", opacity: 0.6 }} />
+              <LineChart data={trend} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                <CartesianGrid stroke="currentColor" strokeOpacity={0.05} vertical={false} />
+                <XAxis dataKey="w" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "currentColor", opacity: 0.5 }} />
+                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "currentColor", opacity: 0.5 }} />
                 <Tooltip
                   contentStyle={{
-                    background: "var(--popover)",
+                    background: "var(--background)",
                     border: "1px solid var(--border)",
-                    borderRadius: 12,
+                    borderRadius: 8,
                     fontSize: 12,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
                   }}
                 />
                 <Line
                   type="monotone"
                   dataKey="kg"
-                  stroke="url(#lineGrad)"
+                  stroke="var(--leaf)"
                   strokeWidth={3}
-                  dot={{ r: 4, fill: "#14B8A6", strokeWidth: 0 }}
+                  dot={{ r: 4, fill: "var(--leaf)", strokeWidth: 0 }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
-          <Wave className="pointer-events-none absolute -bottom-1 left-6 h-4 w-40 text-[var(--lens)] opacity-25" />
-        </div>
+        </section>
 
-        <div className="glass relative overflow-hidden p-6">
-          <div className="flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-[var(--leaf)] to-[var(--lens)] text-[oklch(0.15_0.03_160)]">
-              <Lightbulb className="h-4 w-4" />
-            </span>
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Personal AI Tip
-            </h3>
-          </div>
-          {isTipLoading ? (
-            <div className="mt-4 animate-pulse space-y-2">
-              <div className="h-4 w-3/4 rounded bg-[var(--glass-border)]"></div>
-              <div className="h-4 w-5/6 rounded bg-[var(--glass-border)]"></div>
-              <div className="h-4 w-2/3 rounded bg-[var(--glass-border)]"></div>
-            </div>
-          ) : (
-            <p className="mt-4 text-lg font-medium leading-snug">
-              {aiTip || "Try swapping two short car trips for a walk or bike ride, you could save around 8 kg CO₂ this week."}
-            </p>
-          )}
-          <Link
-            to="/onboarding"
-            className="mt-5 inline-flex text-sm font-medium text-[var(--lens)] hover:underline"
-          >
-            Tuning with your info... →
-          </Link>
-          <LeafSprig className="pointer-events-none absolute -bottom-4 -right-4 h-24 w-24 text-[var(--leaf)] opacity-20" />
-        </div>
-      </section>
-
-      <section className="mt-8 animate-fade-in">
-        <h2 className="text-xl font-semibold tracking-tight">Recent Activities</h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {logs?.map((log) => (
-            <div 
-              key={log.id} 
-              onClick={() => setEditLog(log)} 
-              className="glass hover-scale flex cursor-pointer items-center justify-between p-4 transition"
-              title="Click to edit"
-            >
-              <div>
-                <p className="font-medium text-foreground capitalize">{log.category} - {log.subtype}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {log.amount} {log.unit} • {log.log_date}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="font-semibold text-[var(--alert)]">{log.co2_kg} <span className="text-xs font-normal">kg CO₂</span></p>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground opacity-70">Edit</p>
-              </div>
-            </div>
-          ))}
-          {(!logs || logs.length === 0) && (
-            <p className="text-sm text-muted-foreground col-span-full">No activities logged yet.</p>
-          )}
-        </div>
-      </section>
-
-      <section className="mt-8 grid gap-6 lg:grid-cols-2 animate-fade-in mb-8">
-        <div className="glass p-6">
-          <h2 className="text-xl font-semibold tracking-tight mb-4 flex items-center gap-2">
-            <Leaf className="h-5 w-5 text-[var(--leaf)]"/> Weekly Action Pledges
+        {/* PLEDGES - 1 column */}
+        <section className="glass col-span-1 p-8">
+          <h2 className="text-lg font-semibold tracking-tight mb-6 flex items-center gap-2">
+            <Leaf className="h-5 w-5 text-[var(--leaf)]"/> Action Pledges
           </h2>
-          <p className="text-sm text-muted-foreground mb-4">Check off these simple actions to lower your footprint.</p>
-          <div className="space-y-3">
-            {['Meatless Monday', 'Bike or walk to work twice', 'Unplug idle electronics', 'Use reusable shopping bags'].map(pledge => (
-              <label key={pledge} className="flex items-center gap-3 cursor-pointer group p-2 hover:bg-[var(--glass-border)] rounded-xl transition">
-                <input type="checkbox" className="w-5 h-5 accent-[var(--leaf)] rounded border-gray-300" />
-                <span className="text-sm font-medium group-hover:text-[var(--leaf)] transition">{pledge}</span>
+          <div className="space-y-5">
+            {['Meatless Monday', 'Bike or walk to work', 'Unplug idle electronics', 'Use reusable bags'].map(pledge => (
+              <label key={pledge} className="flex items-start gap-4 cursor-pointer group">
+                <input type="checkbox" className="mt-0.5 w-5 h-5 accent-[var(--leaf)] rounded border-[var(--border)] bg-[var(--background)] transition" />
+                <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition">{pledge}</span>
               </label>
             ))}
           </div>
-        </div>
+        </section>
 
-        <div className="glass p-6">
-          <h2 className="text-xl font-semibold tracking-tight mb-4 flex items-center gap-2">
-            <GlobeDoodle className="h-5 w-5 text-[var(--lens)]"/> Environmental News
+        {/* RECENT ACTIVITIES - 2 columns */}
+        <section className="col-span-1 md:col-span-2 glass p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-semibold tracking-tight">Recent Activities</h2>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {logs?.slice(0, 6).map((log) => (
+              <div 
+                key={log.id} 
+                onClick={() => setEditLog(log)} 
+                className="group flex cursor-pointer items-center justify-between rounded-xl border border-transparent p-3 transition hover:bg-[var(--background)] hover:border-[var(--border)]"
+              >
+                <div>
+                  <p className="font-semibold text-foreground capitalize">{log.category}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {log.amount} {log.unit} • {log.subtype}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-[var(--alert)]">{log.co2_kg} <span className="text-xs font-medium text-muted-foreground">kg CO₂</span></p>
+                </div>
+              </div>
+            ))}
+            {(!logs || logs.length === 0) && (
+              <p className="text-sm text-muted-foreground col-span-full">No activities logged yet.</p>
+            )}
+          </div>
+        </section>
+
+        {/* NEWS - 1 column */}
+        <section className="col-span-1 glass p-8">
+           <h2 className="text-lg font-semibold tracking-tight mb-6 flex items-center gap-2">
+            <Globe className="h-5 w-5 text-[var(--lens)]"/> Environmental News
           </h2>
-          <div className="space-y-4 mt-2">
+          <div className="space-y-6 mt-2">
             {isNewsLoading ? (
               <div className="animate-pulse space-y-4">
-                <div className="h-16 rounded-xl bg-[var(--glass-border)]/50"></div>
-                <div className="h-16 rounded-xl bg-[var(--glass-border)]/50"></div>
+                <div className="h-20 rounded-xl bg-[var(--background)]"></div>
+                <div className="h-20 rounded-xl bg-[var(--background)]"></div>
               </div>
             ) : aiNews && Array.isArray(aiNews) ? (
               aiNews.map((news: any, idx: number) => (
-                <div key={idx} className={`border-l-2 ${idx % 2 === 0 ? 'border-[var(--lens)]' : 'border-[var(--leaf)]'} pl-4 py-1 mt-4`}>
-                  <p className={`text-xs ${idx % 2 === 0 ? 'text-[var(--lens)]' : 'text-[var(--leaf)]'} font-medium mb-1 tracking-wider uppercase`}>{news.category || "Awareness"}</p>
-                  <h3 className="text-sm font-semibold">{news.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">{news.description}</p>
+                <div key={idx} className="border-t border-[var(--border)] pt-4 first:border-0 first:pt-0">
+                  <p className={`text-xs font-bold mb-1 tracking-widest uppercase ${idx % 2 === 0 ? 'text-[var(--lens)]' : 'text-[var(--leaf)]'}`}>{news.category || "Awareness"}</p>
+                  <h3 className="text-sm font-semibold text-foreground leading-snug">{news.title}</h3>
+                  <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{news.description}</p>
                 </div>
               ))
             ) : (
               <>
-                <div className="border-l-2 border-[var(--lens)] pl-4 py-1">
-                  <p className="text-xs text-[var(--lens)] font-medium mb-1 tracking-wider uppercase">Global Trends</p>
-                  <h3 className="text-sm font-semibold">Renewable energy passes 30% of global electricity</h3>
-                  <p className="text-xs text-muted-foreground mt-1">Solar and wind power have reached a new milestone in global energy production, significantly lowering global carbon intensity...</p>
+                <div className="border-t border-[var(--border)] pt-4 first:border-0 first:pt-0">
+                  <p className="text-xs font-bold text-[var(--lens)] mb-1 tracking-widest uppercase">Global Trends</p>
+                  <h3 className="text-sm font-semibold text-foreground leading-snug">Renewable energy passes 30% of global electricity</h3>
                 </div>
-                <div className="border-l-2 border-[var(--leaf)] pl-4 py-1 mt-4">
-                  <p className="text-xs text-[var(--leaf)] font-medium mb-1 tracking-wider uppercase">Awareness Campaign</p>
-                  <h3 className="text-sm font-semibold">The "Reduce, Reuse, Refill" Initiative</h3>
-                  <p className="text-xs text-muted-foreground mt-1">Join millions this month in avoiding single-use plastics. Simple actions like bringing your own mug can save 10kg of CO₂ yearly...</p>
+                <div className="border-t border-[var(--border)] pt-4">
+                  <p className="text-xs font-bold text-[var(--leaf)] mb-1 tracking-widest uppercase">Awareness</p>
+                  <h3 className="text-sm font-semibold text-foreground leading-snug">The "Reduce, Reuse, Refill" Initiative</h3>
                 </div>
               </>
             )}
           </div>
-        </div>
-      </section>
+        </section>
+
+      </div>
 
       <LogEntryModal 
         open={open || !!editLog} 
