@@ -27,6 +27,9 @@ export const getAIPersonalizedTip = createServerFn({ method: 'POST' })
 
       const prompt = `You are a friendly, encouraging sustainability coach inside a carbon footprint app called CarbonLens. 
 
+Address the user by their name: ${profile.full_name ? profile.full_name.split(' ')[0] : 'there'}!
+Listen to their carbon leaves and give them a very specific tip based on their personal data.
+
 Here is a user's carbon footprint data for the current period:
 - Total footprint: ${stats.totalKg || 0} kg CO2
 - Travel: ${stats.travelKg || 0} kg CO2
@@ -34,21 +37,48 @@ Here is a user's carbon footprint data for the current period:
 - Food: ${stats.foodKg || 0} kg CO2
 - Shopping: ${stats.shoppingKg || 0} kg CO2
 - User context: lives in ${profile.location || 'Unknown'}, household size ${profile.household_size || '1'}, primary commute is ${profile.commute_mode || 'Unknown'}, diet is ${profile.diet_type || 'Unknown'}.
-- Previous suggestions given (avoid repeating these): ${previousSuggestions}
+- Previous suggestions given: ${previousSuggestions}
 
-Task: Identify the single category contributing most to this user's footprint. Generate ONE specific, low-effort, achievable suggestion to reduce emissions in that category this week. 
+Task: Identify the single category contributing most to this user's footprint. Generate ONE specific, low-effort, achievable suggestion to reduce emissions in that category this week. Explicitly mention their commute mode or diet if relevant to prove you are analyzing their personal data.
 
 Rules:
 - Keep it under 35 words.
-- Be specific and actionable (not generic advice like "drive less" — instead say something like "Swap one car commute for the bus this week to cut ~2kg CO2").
+- Be specific and actionable (not generic advice like "drive less" — instead say something like "Since you commute by Car, swap one car commute for the bus this week to cut ~2kg CO2").
 - Use an encouraging, non-judgmental tone — never guilt-trip.
-- Do not invent or estimate new CO2 numbers beyond what's given; only reference the data provided.
+- Do not invent or estimate new CO2 numbers beyond what's given.
 - Return ONLY the suggestion text, no preamble, no markdown, no quotes.`;
 
       const result = await model.generateContent(prompt);
       return result.response.text().trim();
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.status === 429 || error?.message?.includes("429")) {
+        return "You're taking so much action, we've hit our AI quota! 😅 Please wait a minute before tuning your next tip.";
+      }
       console.error("Gemini API Error:", error);
       return "Oops, we couldn't load your personalized tip right now. Try swapping two short car trips for a walk or bike ride!";
+    }
+  });
+
+export const getAIEnvironmentalNews = createServerFn({ method: 'POST' })
+  .handler(async () => {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey === "YOUR_API_KEY_HERE") {
+      return null;
+    }
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const prompt = `Generate 2 recent, short, positive environmental news snippets or awareness campaigns. Format exactly as a JSON array of objects with keys: "category" (e.g. "Global Trends"), "title" (short title), "description" (max 2 sentences). No markdown fences, just raw JSON.`;
+      const result = await model.generateContent(prompt);
+      let text = result.response.text().trim();
+      if (text.startsWith("\`\`\`json")) text = text.replace(/^\`\`\`json/g, "").replace(/\`\`\`$/g, "").trim();
+      return JSON.parse(text);
+    } catch (error: any) {
+      if (error?.status === 429 || error?.message?.includes("429")) {
+        console.warn("AI News 429 Error: Quota exceeded");
+        return null;
+      }
+      console.error("Gemini News Error:", error);
+      return null;
     }
   });

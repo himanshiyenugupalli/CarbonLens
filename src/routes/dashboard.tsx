@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getAIPersonalizedTip } from "@/lib/ai";
+import { getAIPersonalizedTip, getAIEnvironmentalNews } from "@/lib/ai";
 import { supabase } from "@/lib/supabase";
 import {
   ResponsiveContainer,
@@ -122,6 +122,13 @@ function Dashboard() {
     queryKey: ["ai-tip", stats],
     queryFn: () => getAIPersonalizedTip({ data: { profile: profile || {}, stats } }),
     enabled: !!profile && stats.totalKg > 0,
+    staleTime: Infinity,
+  });
+
+  const { data: aiNews, isLoading: isNewsLoading } = useQuery({
+    queryKey: ["ai-news"],
+    queryFn: () => getAIEnvironmentalNews(),
+    staleTime: Infinity,
   });
 
   const isHigh = stats.totalKg > HIGH_THRESHOLD_KG;
@@ -280,7 +287,7 @@ function Dashboard() {
             to="/onboarding"
             className="mt-5 inline-flex text-sm font-medium text-[var(--lens)] hover:underline"
           >
-            Tune your profile →
+            Tuning with your info... →
           </Link>
           <LeafSprig className="pointer-events-none absolute -bottom-4 -right-4 h-24 w-24 text-[var(--leaf)] opacity-20" />
         </div>
@@ -288,7 +295,7 @@ function Dashboard() {
 
       <section className="mt-8 animate-fade-in">
         <h2 className="text-xl font-semibold tracking-tight">Recent Activities</h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {logs?.map((log) => (
             <div 
               key={log.id} 
@@ -335,16 +342,33 @@ function Dashboard() {
             <GlobeDoodle className="h-5 w-5 text-[var(--lens)]"/> Environmental News
           </h2>
           <div className="space-y-4 mt-2">
-            <div className="border-l-2 border-[var(--lens)] pl-4 py-1">
-              <p className="text-xs text-[var(--lens)] font-medium mb-1 tracking-wider uppercase">Global Trends</p>
-              <h3 className="text-sm font-semibold">Renewable energy passes 30% of global electricity</h3>
-              <p className="text-xs text-muted-foreground mt-1">Solar and wind power have reached a new milestone in global energy production, significantly lowering global carbon intensity...</p>
-            </div>
-            <div className="border-l-2 border-[var(--leaf)] pl-4 py-1 mt-4">
-              <p className="text-xs text-[var(--leaf)] font-medium mb-1 tracking-wider uppercase">Awareness Campaign</p>
-              <h3 className="text-sm font-semibold">The "Reduce, Reuse, Refill" Initiative</h3>
-              <p className="text-xs text-muted-foreground mt-1">Join millions this month in avoiding single-use plastics. Simple actions like bringing your own mug can save 10kg of CO₂ yearly...</p>
-            </div>
+            {isNewsLoading ? (
+              <div className="animate-pulse space-y-4">
+                <div className="h-16 rounded-xl bg-[var(--glass-border)]/50"></div>
+                <div className="h-16 rounded-xl bg-[var(--glass-border)]/50"></div>
+              </div>
+            ) : aiNews && Array.isArray(aiNews) ? (
+              aiNews.map((news: any, idx: number) => (
+                <div key={idx} className={`border-l-2 ${idx % 2 === 0 ? 'border-[var(--lens)]' : 'border-[var(--leaf)]'} pl-4 py-1 mt-4`}>
+                  <p className={`text-xs ${idx % 2 === 0 ? 'text-[var(--lens)]' : 'text-[var(--leaf)]'} font-medium mb-1 tracking-wider uppercase`}>{news.category || "Awareness"}</p>
+                  <h3 className="text-sm font-semibold">{news.title}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">{news.description}</p>
+                </div>
+              ))
+            ) : (
+              <>
+                <div className="border-l-2 border-[var(--lens)] pl-4 py-1">
+                  <p className="text-xs text-[var(--lens)] font-medium mb-1 tracking-wider uppercase">Global Trends</p>
+                  <h3 className="text-sm font-semibold">Renewable energy passes 30% of global electricity</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Solar and wind power have reached a new milestone in global energy production, significantly lowering global carbon intensity...</p>
+                </div>
+                <div className="border-l-2 border-[var(--leaf)] pl-4 py-1 mt-4">
+                  <p className="text-xs text-[var(--leaf)] font-medium mb-1 tracking-wider uppercase">Awareness Campaign</p>
+                  <h3 className="text-sm font-semibold">The "Reduce, Reuse, Refill" Initiative</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Join millions this month in avoiding single-use plastics. Simple actions like bringing your own mug can save 10kg of CO₂ yearly...</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
