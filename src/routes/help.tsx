@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { Mail } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 import {
   Accordion,
   AccordionContent,
@@ -9,6 +10,12 @@ import {
 } from "@/components/ui/accordion";
 
 export const Route = createFileRoute("/help")({
+  beforeLoad: async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      throw redirect({ to: "/auth", replace: true });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Help & Support: CarbonLens" },

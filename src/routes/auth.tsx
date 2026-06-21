@@ -1,10 +1,16 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { useState } from "react";
-import { LeafSprig, LensRing, SunRays } from "@/components/Doodles";
+import { BackgroundLeaf } from "@/components/Doodles";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/auth")({
+  beforeLoad: async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      throw redirect({ to: "/dashboard", replace: true });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Sign in: CarbonLens" },
@@ -72,10 +78,11 @@ function AuthPage() {
   };
 
   return (
-    <div className="relative min-h-screen px-4 py-6 sm:px-8">
-      <SunRays className="pointer-events-none absolute left-6 top-24 h-16 w-16 text-[var(--leaf)] opacity-20" />
-      <LensRing className="pointer-events-none absolute -bottom-10 right-6 h-56 w-56 text-[var(--lens)] opacity-15" />
-      <LeafSprig className="pointer-events-none absolute left-8 bottom-12 h-20 w-20 text-[var(--leaf)] opacity-25" />
+    <div className="relative min-h-screen px-4 py-6 sm:px-8 overflow-clip">
+      {/* Large animated background element */}
+      <div className="pointer-events-none fixed -top-40 -right-40 h-[800px] w-[800px] text-[var(--green-accent)] opacity-10 mix-blend-multiply dark:mix-blend-screen [animation:var(--animate-leaf-sway)]">
+        <BackgroundLeaf className="h-full w-full" />
+      </div>
 
       <header className="mx-auto flex max-w-2xl items-center justify-between">
         <Link to="/" className="flex items-center gap-2 font-semibold">

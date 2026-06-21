@@ -1,11 +1,17 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useState } from "react";
-import { LeafSprig, LensRing, SunRays, CloudSquiggle } from "@/components/Doodles";
+import { BackgroundLeaf } from "@/components/Doodles";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/onboarding")({
+  beforeLoad: async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      throw redirect({ to: "/auth", replace: true });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Get started: CarbonLens" },
@@ -62,17 +68,21 @@ function Onboarding() {
   const pct = (step / 4) * 100;
 
   return (
-    <div className="relative min-h-screen px-4 py-6 sm:px-8">
-      <SunRays className="pointer-events-none absolute left-6 top-24 h-16 w-16 text-[var(--leaf)] opacity-20" />
-      <CloudSquiggle className="pointer-events-none absolute right-8 top-40 h-8 w-32 text-[var(--lens)] opacity-25" />
-      <LensRing className="pointer-events-none absolute -bottom-10 left-10 h-48 w-48 text-[var(--lens)] opacity-15" />
+    <div className="relative min-h-screen px-4 py-6 sm:px-8 overflow-clip">
+      {/* Large animated background element */}
+      <div className="pointer-events-none fixed -top-40 -right-40 h-[800px] w-[800px] text-[var(--green-accent)] opacity-10 mix-blend-multiply dark:mix-blend-screen [animation:var(--animate-leaf-sway)]">
+        <BackgroundLeaf className="h-full w-full" />
+      </div>
+      <div className="pointer-events-none fixed -bottom-40 -left-40 h-[600px] w-[600px] text-[var(--magenta-accent)] opacity-10 mix-blend-multiply dark:mix-blend-screen [animation:var(--animate-leaf-sway)]" style={{ animationDelay: '-6s' }}>
+        <BackgroundLeaf className="h-full w-full transform scale-x-[-1]" />
+      </div>
 
       <header className="mx-auto flex max-w-2xl items-center justify-between">
         <Logo />
         <ThemeToggle />
       </header>
 
-      <div className="mx-auto mt-8 max-w-2xl">
+      <div className="mx-auto mt-8 max-w-2xl relative z-10">
         <div className="mb-2 flex items-center justify-between text-xs font-medium text-muted-foreground">
           <span>Step {step} of 4</span>
           <span>{Math.round(pct)}%</span>
@@ -84,7 +94,6 @@ function Onboarding() {
         <div className="glass-strong relative mt-6 overflow-hidden p-6 sm:p-10">
           {step === 1 && (
             <div className="relative">
-              <LeafSprig className="pointer-events-none absolute -right-2 -top-2 h-16 w-16 text-[var(--leaf)] opacity-30" />
               <p className="text-sm uppercase tracking-widest text-[var(--lens)]">Welcome</p>
               <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">CarbonLens</h1>
               <p className="mt-3 text-lg text-muted-foreground">Understand. Track. Reduce.</p>

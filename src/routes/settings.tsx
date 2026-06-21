@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { AppShell } from "@/components/AppShell";
 import { supabase } from "@/lib/supabase";
@@ -6,6 +6,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LogOut, Download, Trash2, Bell } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({
+  beforeLoad: async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      throw redirect({ to: "/auth", replace: true });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Settings: CarbonLens" },

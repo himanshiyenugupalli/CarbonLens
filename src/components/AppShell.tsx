@@ -1,22 +1,18 @@
 import type { ReactNode } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { ThemeToggle } from "./ThemeToggle";
 import { Logo } from "./Logo";
-import { User, LogOut } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { BackgroundLeaf } from "./Doodles";
+import { User, LogOut, LayoutDashboard, Settings, HelpCircle, Menu, X } from "lucide-react";
+import { useState } from "react";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const location = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -24,47 +20,107 @@ export function AppShell({ children }: { children: ReactNode }) {
     navigate({ to: "/" });
   };
 
+  const navLinks = [
+    { name: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
+    { name: "Profile", to: "/profile", icon: User },
+    { name: "Settings", to: "/settings", icon: Settings },
+    { name: "Help", to: "/help", icon: HelpCircle },
+  ];
+
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-30 px-4 pt-4 sm:px-8">
-        <nav className="glass mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <Link to="/dashboard" className="flex items-center">
+    <div className="h-screen flex relative overflow-hidden">
+      {/* Large animated background element */}
+      <div className="pointer-events-none fixed -top-40 -right-40 h-[800px] w-[800px] text-[var(--green-accent)] opacity-10 mix-blend-multiply dark:mix-blend-screen [animation:var(--animate-leaf-sway)] z-0">
+        <BackgroundLeaf className="h-full w-full" />
+      </div>
+      <div className="pointer-events-none fixed -bottom-40 -left-40 h-[600px] w-[600px] text-[var(--magenta-accent)] opacity-10 mix-blend-multiply dark:mix-blend-screen [animation:var(--animate-leaf-sway)] z-0" style={{ animationDelay: '-6s' }}>
+        <BackgroundLeaf className="h-full w-full transform scale-x-[-1]" />
+      </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-[var(--foreground)]/10 backdrop-blur-sm lg:hidden transition-opacity"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside 
+        className={`fixed inset-y-0 left-0 z-50 w-64 transform border-r border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-[40px] transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        <div className="flex h-full flex-col px-5 py-8">
+          <div className="flex items-center justify-between mb-10 pl-2">
+            <Link to="/dashboard" onClick={() => setIsSidebarOpen(false)}>
+              <Logo />
+            </Link>
+            <button 
+              className="lg:hidden p-2 text-muted-foreground transition hover:text-foreground"
+              onClick={() => setIsSidebarOpen(false)}
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          <nav className="flex-1 space-y-2">
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              const isActive = location.pathname === link.to;
+              return (
+                <Link
+                  key={link.name}
+                  to={link.to}
+                  onClick={() => setIsSidebarOpen(false)}
+                  className={`group flex items-center gap-3 rounded-2xl px-4 py-3.5 text-[15px] font-medium transition-all duration-300 ${
+                    isActive 
+                      ? "bg-gradient-to-r from-[var(--green-accent)] to-[var(--magenta-accent)] text-white shadow-md shadow-[var(--green-accent)]/20" 
+                      : "text-muted-foreground hover:bg-[var(--border)] hover:text-foreground"
+                  }`}
+                >
+                  <Icon className={`h-5 w-5 ${isActive ? "text-white" : "text-muted-foreground group-hover:text-foreground"}`} />
+                  {link.name}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="mt-auto pt-6">
+            <div className="mb-4 flex items-center px-4">
+               <ThemeToggle />
+               <span className="ml-3 text-sm text-muted-foreground font-medium">Theme</span>
+            </div>
+            <button
+              onClick={handleSignOut}
+              className="group flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-[15px] font-medium text-[var(--destructive)] transition-colors hover:bg-[var(--destructive)]/10"
+            >
+              <LogOut className="h-5 w-5" />
+              Sign out
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col h-full overflow-hidden relative">
+        {/* Mobile Header */}
+        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-[40px] px-6 py-4 lg:hidden">
+           <Link to="/dashboard" className="scale-90 origin-left">
             <Logo />
           </Link>
-          <div className="flex items-center gap-3">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="rounded-full p-2 text-muted-foreground transition hover:bg-[var(--glass-border)] hover:text-foreground outline-none">
-                  <User className="h-5 w-5" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 glass-strong border-[var(--glass-border)]">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-[var(--glass-border)]" />
-                <DropdownMenuItem asChild>
-                  <Link to="/profile" className="w-full cursor-pointer">Profile</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/settings" className="w-full cursor-pointer">Settings</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/help" className="w-full cursor-pointer">Help</Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-[var(--glass-border)]" />
-                <DropdownMenuItem 
-                  className="w-full cursor-pointer text-[var(--alert)] focus:bg-[var(--alert)]/10 focus:text-[var(--alert)]"
-                  onClick={handleSignOut}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <ThemeToggle />
+          <button 
+            className="p-2 text-muted-foreground transition hover:text-foreground"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <Menu className="h-6 w-6" />
+          </button>
+        </header>
+
+        <div className="flex-1 overflow-y-auto w-full relative z-10">
+          <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-8 lg:px-16">
+            {children}
           </div>
-        </nav>
-      </header>
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-8">{children}</main>
+        </div>
+      </main>
     </div>
   );
 }

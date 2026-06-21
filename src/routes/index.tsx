@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useEffect } from "react";
@@ -16,21 +16,16 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
-import {
-  LeafSprig,
-  LensRing,
-  SunRays,
-  CloudSquiggle,
-  Wave,
-  Sprout,
-  Mountains,
-  GlobeDoodle,
-  Bike,
-  Recycle,
-} from "@/components/Doodles";
+import { BackgroundLeaf } from "@/components/Doodles";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const Route = createFileRoute("/")({
+  beforeLoad: async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      throw redirect({ to: "/dashboard", replace: true });
+    }
+  },
   head: () => ({
     meta: [
       { title: "CarbonLens: Understand. Track. Reduce." },
@@ -60,16 +55,13 @@ function Landing() {
 
   return (
     <div className="relative min-h-screen overflow-clip">
-      {/* Floating doodle field */}
-      <SunRays className="pointer-events-none absolute left-6 top-24 h-20 w-20 text-[var(--leaf)] opacity-25 [animation:var(--animate-spin-slow)]" />
-      <CloudSquiggle className="pointer-events-none absolute right-10 top-32 h-8 w-40 text-[var(--lens)] opacity-30 [animation:var(--animate-drift)]" />
-      <LensRing className="pointer-events-none absolute -bottom-24 -left-16 h-80 w-80 text-[var(--lens)] opacity-15 [animation:var(--animate-spin-slow)]" />
-      <LeafSprig className="pointer-events-none absolute right-8 top-72 h-24 w-24 text-[var(--leaf)] opacity-30 [animation:var(--animate-float)]" />
-      <Mountains className="pointer-events-none absolute left-1/2 top-[42rem] hidden h-20 w-72 -translate-x-1/2 text-[var(--ash)] opacity-30 sm:block" />
-      <GlobeDoodle className="pointer-events-none absolute right-16 top-[28rem] h-28 w-28 text-[var(--coal)] opacity-15 dark:text-[var(--mint)] [animation:var(--animate-float)]" />
-      <Bike className="pointer-events-none absolute left-8 top-[34rem] h-20 w-32 text-[var(--ash)] opacity-30 [animation:var(--animate-drift)]" />
-      <Sprout className="pointer-events-none absolute left-1/3 top-[58rem] h-20 w-20 text-[var(--leaf)] opacity-25 [animation:var(--animate-float)]" />
-      <Recycle className="pointer-events-none absolute right-1/4 top-[64rem] h-20 w-20 text-[var(--lens)] opacity-25 [animation:var(--animate-spin-slow)]" />
+      {/* Large animated background element */}
+      <div className="pointer-events-none fixed -top-40 -right-40 h-[800px] w-[800px] text-[var(--green-accent)] opacity-10 mix-blend-multiply dark:mix-blend-screen [animation:var(--animate-leaf-sway)]">
+        <BackgroundLeaf className="h-full w-full" />
+      </div>
+      <div className="pointer-events-none fixed -bottom-40 -left-40 h-[600px] w-[600px] text-[var(--magenta-accent)] opacity-10 mix-blend-multiply dark:mix-blend-screen [animation:var(--animate-leaf-sway)]" style={{ animationDelay: '-6s' }}>
+        <BackgroundLeaf className="h-full w-full transform scale-x-[-1]" />
+      </div>
 
       <div className="px-4 py-6 sm:px-8">
         {/* Header */}
@@ -194,7 +186,6 @@ function Landing() {
                   <span className="text-5xl font-bold text-[var(--ash)]/40">{s.n}</span>
                   <h3 className="mt-2 text-lg font-semibold">{s.t}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">{s.d}</p>
-                  <Wave className="pointer-events-none absolute -bottom-1 left-4 h-3 w-32 text-[var(--lens)] opacity-30" />
                 </div>
               ))}
             </div>
@@ -229,8 +220,6 @@ function Landing() {
           {/* CTA */}
           <section className="mt-24">
             <div className="glass-strong relative overflow-hidden p-8 text-center sm:p-12">
-              <SunRays className="pointer-events-none absolute -left-6 -top-6 h-32 w-32 text-[var(--leaf)] opacity-20 [animation:var(--animate-spin-slow)]" />
-              <GlobeDoodle className="pointer-events-none absolute -right-6 -bottom-6 h-32 w-32 text-[var(--lens)] opacity-20 [animation:var(--animate-float)]" />
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
                 Ready to meet your footprint?
               </h2>

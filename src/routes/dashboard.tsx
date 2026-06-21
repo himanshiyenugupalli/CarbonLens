@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getAIPersonalizedTip, getAIEnvironmentalNews } from "@/lib/ai";
@@ -17,6 +17,12 @@ import { AppShell } from "@/components/AppShell";
 import { LogEntryModal } from "@/components/LogEntryModal";
 
 export const Route = createFileRoute("/dashboard")({
+  beforeLoad: async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      throw redirect({ to: "/auth", replace: true });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Dashboard: CarbonLens" },

@@ -1,31 +1,20 @@
 import { createServerFn } from '@tanstack/react-start';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-/**
- * Server function to generate a personalized AI tip based on the user's footprint data.
- * It uses the Google Gemini API to analyze the highest emission category and suggest an actionable tip.
- *
- * @param data - Object containing user profile context, aggregated stats, and previous suggestions.
- * @returns A personalized sustainability suggestion string.
- */
-export const getAIPersonalizedTip = createServerFn({ method: 'POST' })
-  .validator((data: { profile: any; stats: any; previous_suggestions?: string }) => data)
-  .handler(async ({ data }) => {
-    const apiKey = process.env.GEMINI_API_KEY;
-    
-    if (!apiKey || apiKey === "YOUR_API_KEY_HERE") {
-      return "Tip: Add your Gemini API key in the .env file to get personalized AI suggestions!";
-    }
+export async function generateTip(data: { profile: any; stats: any; previous_suggestions?: string }, apiKey: string | undefined) {
+  if (!apiKey || apiKey === "YOUR_API_KEY_HERE") {
+    return "Tip: Add your Gemini API key in the .env file to get personalized AI suggestions!";
+  }
 
-    try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      const profile = data.profile || {};
-      const stats = data.stats || {};
-      const previousSuggestions = data.previous_suggestions || "None";
+    const profile = data.profile || {};
+    const stats = data.stats || {};
+    const previousSuggestions = data.previous_suggestions || "None";
 
-      const prompt = `You are a friendly, encouraging sustainability coach inside a carbon footprint app called CarbonLens. 
+    const prompt = `You are a friendly, encouraging sustainability coach inside a carbon footprint app called CarbonLens. 
 
 Address the user by their name: ${profile.full_name ? profile.full_name.split(' ')[0] : 'there'}!
 Listen to their carbon leaves and give them a very specific tip based on their personal data.
@@ -48,37 +37,53 @@ Rules:
 - Do not invent or estimate new CO2 numbers beyond what's given.
 - Return ONLY the suggestion text, no preamble, no markdown, no quotes.`;
 
-      const result = await model.generateContent(prompt);
-      return result.response.text().trim();
-    } catch (error: any) {
-      if (error?.status === 429 || error?.message?.includes("429")) {
-        return "You're taking so much action, we've hit our AI quota! 😅 Please wait a minute before tuning your next tip.";
-      }
-      console.error("Gemini API Error:", error);
-      return "Oops, we couldn't load your personalized tip right now. Try swapping two short car trips for a walk or bike ride!";
+    const result = await model.generateContent(prompt);
+    return result.response.text().trim();
+  } catch (error: any) {
+    if (error?.status === 429 || error?.message?.includes("429")) {
+      return "You're taking so much action, we've hit our AI quota! 😅 Please wait a minute before tuning your next tip.";
     }
+    console.error("Gemini API Error:", error);
+    return "Oops, we couldn't load your personalized tip right now. Try swapping two short car trips for a walk or bike ride!";
+  }
+}
+
+/**
+ * Server function to generate a personalized AI tip based on the user's footprint data.
+ * It uses the Google Gemini API to analyze the highest emission category and suggest an actionable tip.
+ *
+ * @param data - Object containing user profile context, aggregated stats, and previous suggestions.
+ * @returns A personalized sustainability suggestion string.
+ */
+export const getAIPersonalizedTip = createServerFn({ method: 'POST' })
+  .validator((data: { profile: any; stats: any; previous_suggestions?: string }) => data)
+  .handler(async ({ data }) => {
+    return generateTip(data, process.env.GEMINI_API_KEY);
   });
+
+export async function generateNews(apiKey: string | undefined) {
+  if (!apiKey || apiKey === "YOUR_API_KEY_HERE") {
+    return null;
+  }
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const prompt = `Generate 2 recent, short, positive environmental news snippets or awareness campaigns. Format exactly as a JSON array of objects with keys: "category" (e.g. "Global Trends"), "title" (short title), "description" (max 2 sentences). No markdown fences, just raw JSON.`;
+    const result = await model.generateContent(prompt);
+    let text = result.response.text().trim();
+    if (text.startsWith("\`\`\`json")) text = text.replace(/^\`\`\`json/g, "").replace(/\`\`\`$/g, "").trim();
+    return JSON.parse(text);
+  } catch (error: any) {
+    if (error?.status === 429 || error?.message?.includes("429")) {
+      console.warn("AI News 429 Error: Quota exceeded");
+      return null;
+    }
+    console.error("Gemini News Error:", error);
+    return null;
+  }
+}
 
 export const getAIEnvironmentalNews = createServerFn({ method: 'POST' })
   .handler(async () => {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey || apiKey === "YOUR_API_KEY_HERE") {
-      return null;
-    }
-    try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-      const prompt = `Generate 2 recent, short, positive environmental news snippets or awareness campaigns. Format exactly as a JSON array of objects with keys: "category" (e.g. "Global Trends"), "title" (short title), "description" (max 2 sentences). No markdown fences, just raw JSON.`;
-      const result = await model.generateContent(prompt);
-      let text = result.response.text().trim();
-      if (text.startsWith("\`\`\`json")) text = text.replace(/^\`\`\`json/g, "").replace(/\`\`\`$/g, "").trim();
-      return JSON.parse(text);
-    } catch (error: any) {
-      if (error?.status === 429 || error?.message?.includes("429")) {
-        console.warn("AI News 429 Error: Quota exceeded");
-        return null;
-      }
-      console.error("Gemini News Error:", error);
-      return null;
-    }
+    return generateNews(process.env.GEMINI_API_KEY);
   });

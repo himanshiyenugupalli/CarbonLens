@@ -108,3 +108,21 @@ export function Recycle({ className = "" }: { className?: string }) {
     </svg>
   );
 }
+
+export function BackgroundLeaf({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 400 400" className={className} fill="none" aria-hidden="true" preserveAspectRatio="xMidYMid meet">
+      <path 
+        d="M200 380 Q 250 250 350 150 C 400 100 380 20 300 20 C 200 20 100 80 50 150 C 0 220 50 300 200 380 Z" 
+        fill="currentColor"
+        stroke="none"
+      />
+      <path
+        d="M200 380 Q 220 280 280 120"
+        stroke="var(--color-background)"
+        strokeWidth="4"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
